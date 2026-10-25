@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Our moving tracker</title>
+<style>
+:root{--bg:#edf1f3;--sf:#fff;--ink:#12202b;--mu:#566673;--ln:#d2dbe1;--ac:#0b6e6e;--cr:#b3261e;--ok:#2d7a4d;--cD:#0b6e6e;--cS:#5b4bb7;--cB:#7a5a12;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1a22;--sf:#16252f;--ink:#e8eff3;--mu:#9fb0bb;--ln:#2b3f4c;--ac:#4fc3c0;--cr:#ff8a80;--ok:#6fcf97;--cD:#4fc3c0;--cS:#a79bff;--cB:#e0b95a}}
+:root[data-theme=dark]{--bg:#0e1a22;--sf:#16252f;--ink:#e8eff3;--mu:#9fb0bb;--ln:#2b3f4c;--ac:#4fc3c0;--cr:#ff8a80;--ok:#6fcf97;--cD:#4fc3c0;--cS:#a79bff;--cB:#e0b95a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,"Segoe UI",system-ui,sans-serif}
+h1,h2,h3{font-family:Georgia,"Iowan Old Style",serif;margin:0}
+.w{max-width:1320px;margin:0 auto;padding:12px 14px 40px}
+h1{font-size:clamp(23px,4vw,34px);line-height:1.15}
+.mu,small{color:var(--mu)}
+.g{display:grid;gap:10px}.tiles{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}.row{grid-template-columns:repeat(auto-fit,minmax(235px,1fr));margin-top:10px}
+.t,.c,.vis,.r{background:var(--sf);border:1px solid var(--ln);border-radius:10px}
+.t{padding:10px 12px}.t b{display:block;font:700 28px/1.15 Georgia,serif}
+.bar{height:8px;background:var(--ln);border-radius:4px;overflow:hidden;margin:5px 0}.bar i{display:block;height:100%;background:var(--ac)}
+.ow{display:grid;grid-template-columns:48px 1fr 40px;gap:8px;align-items:center;font-size:13px}
+nav,.fl{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 10px;align-items:center}
+button,select,input,summary{font:inherit;color:var(--ink)}
+nav button,.chip{border:1px solid var(--ln);background:var(--sf);border-radius:20px;padding:7px 14px;cursor:pointer}
+nav button.on,.chip.on{background:var(--ac);color:var(--sf);border-color:var(--ac)}
+.main{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){.main{grid-template-columns:minmax(0,1fr) 300px}}
+@media(max-width:899px){.vis{order:-1}}
+.cols{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}.col{flex:0 0 272px}
+.col h3{font-size:17px}.col>small{display:block;margin:0 0 8px}
+.c{padding:9px 10px;margin-bottom:8px;border-radius:8px}.c.k{border-left:4px solid var(--cr)}
+.d{opacity:.55}.d .tt{text-decoration:line-through}
+.c label{display:flex;gap:8px;font-weight:600;cursor:pointer}
+input[type=checkbox]{width:18px;height:18px;flex:none;margin-top:2px;accent-color:var(--ac)}
+.m{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--mu);margin:5px 0 0 26px}
+.o{font-weight:600}.oD{color:var(--cD)}.oS{color:var(--cS)}.oB{color:var(--cB)}.k2{color:var(--cr);font-weight:600}
+.how{font-size:13px;color:var(--mu);margin:4px 0 0 26px}
+.vis{padding:14px;align-self:start}.vis h2{font-size:21px;line-height:1.2;margin-bottom:6px}.vis ul{padding:0;margin:8px 0 0}
+.vis li{display:flex;gap:9px;margin:10px 0;list-style:none}
+.ck{flex:none;width:20px;height:20px;border:2px solid var(--ln);border-radius:50%;display:grid;place-items:center;font-size:12px;margin-top:1px}.ck.y{background:var(--ok);border-color:var(--ok);color:var(--sf)}
+.r{display:grid;grid-template-columns:24px 1fr;gap:6px 8px;padding:9px 10px;margin-bottom:6px;border-radius:8px}
+.r>*:nth-child(n+3){grid-column:2}.r select,.r .nt{width:100%;max-width:420px;background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:5px 7px}
+@media(min-width:800px){.r{grid-template-columns:24px 1fr 90px 90px 240px;align-items:start}.r>*:nth-child(n+3){grid-column:auto}}
+details{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:8px 12px;margin-bottom:10px}summary{cursor:pointer;font-weight:600}
+.af{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.af input,.af select{background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:6px 8px}.af #nt{flex:1 1 220px}
+.af button{background:var(--ac);color:var(--sf);border:0;border-radius:6px;padding:7px 14px;cursor:pointer;font-weight:600}
+.tl{overflow-x:auto;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:10px}
+.tw{position:relative;height:215px;min-width:980px}.tw>*{position:absolute}
+.fg{font-size:12px;white-space:nowrap;border-left:2px solid var(--ac);padding-left:5px}
+.sb{top:128px;height:30px;background:var(--ac);color:var(--sf);border-radius:5px;font-size:12px;padding:6px 6px;overflow:hidden;white-space:nowrap;opacity:.88;border-right:2px solid var(--sf)}
+.dot{top:176px;width:13px;height:13px;margin-left:-6px;border-radius:50%;background:var(--cr)}.dot.y{background:var(--ok)}
+.mo{top:106px;font-size:12px;color:var(--mu);border-left:1px solid var(--ln);height:105px;padding-left:4px}
+.td{top:0;height:212px;border-left:2px dashed var(--cr)}
+</style></head><body><div class="w"><div id="app"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// 1. Paste your Supabase details between the quotes (see the setup steps).
+const SB_URL="",SB_KEY="";
+const W="Sun Mon Tue Wed Thu Fri Sat".split(" "),M="Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" "),OW=["Dane","Shane","Both"];
+const SG=[["Lock it in","2026-10-24","2026-11-01"],["Book and set up","2026-11-02","2026-11-15"],["Declutter and pack","2026-11-16","2026-12-06"],["Packed and confirmed","2026-12-07","2026-12-13"],["Move week","2026-12-14","2026-12-22"],["After the trip","2027-01-04","2027-01-31"]];
+const K=[["Keys","2026-12-16"],["Move day","2026-12-19"],["Flat handed back","2026-12-21"],["Trip starts","2026-12-23"]];
+const MS=[["2026-11-01","Furniture ordered"],["2026-12-13","Packed"],["2026-12-16","Keys"],["2026-12-19","Move day"],["2026-12-21","Flat handed back"],["2026-12-23","Trip starts"],["2027-01-04","Back"]];
+const VI=[["Living at the new house: bed made, kitchen working, heating on",[10,39,43]],["Old flat clean, keys back with your landlord, end date and deposit agreed in writing",[9,18,44,45]],["Broadband live, alarm armed and tested, a key holder is set up",[8,21,32,40,46]],["Post, bills and council tax moved to the new address",[27,28,29,30,35]],["Packed for the trip, early car booked",[13,22,38]]];
+// id, stage, title, owner, due, critical, how, done
+const T=[
+[1,0,"Give your landlord formal notice on the flat","Dane","2026-10-22",0,"Done. Two months’ notice runs to 22 Dec at the earliest.",1],
+[2,0,"Sign the new tenancy","Both","2026-10-22",0,"Done. Keep a PDF where you can both find it.",1],
+[3,0,"Pay the new deposit","Both","2026-10-24",0,"Keep the receipt. your new landlords must protect it and send you the scheme details within 30 days.",0],
+[4,0,"Email your new landlords","Dane","2026-10-26",1,"One email: consent for the alarm, doorbell and a January shed; who supplies broadband, energy and water; meters and stopcock; key time on 16 Dec; a key holder. It gates tasks 8, 20 and 21.",0],
+[5,0,"Plan the working-from-home setup","Dane","2026-10-28",0,"Ask ChatGPT or an interior adviser, with room sizes. Add any desk or storage to the furniture order.",0],
+[6,0,"Get 3 removals quotes","Shane","2026-10-28",0,"Mostly boxes and a few big items, so a man with a van may do. Ask about Goods in Transit cover and who arranges parking.",0],
+[7,0,"Book removals for Sat 19 Dec","Shane","2026-10-30",1,"Peak weekend before Christmas. Get time, both addresses, access notes, parking and price in writing.",0],
+[8,0,"Move your broadband to the new house","Dane","2026-10-30",1,"Ask for go-live on Sat 19 Dec; the old line often ends the same day. Check coverage, exit fees and whether an engineer visit is needed.",0],
+[9,0,"Get your landlord’s early end date in writing","Dane","2026-10-30",0,"End Mon 21 Dec, rent apportioned, deposit terms, evening handover. Without it, notice must end on a rent-period boundary, so about 31 Dec: up to 10 days of extra rent and council tax. Also ask him to sign a dated checkout report at handover; the council needs it.",0],
+[10,0,"Order the Ottoman bed (and any desk or storage)","Both","2026-11-01",0,"Delivery after 16 Dec. Neither of you is off on Thu 17, so ask for Sat 19 or an evening slot. Decide what happens to the old bed.",0],
+[11,0,"Find the flat’s inventory, rent date and deposit scheme","Dane","2026-11-01",0,"The check-in inventory is your best evidence of fair wear and tear.",0],
+[12,0,"List every bill and contract with its notice period","Dane","2026-11-01",0,"Some contracts need 30 days; most energy suppliers need 48 hours. Write each date down.",0],
+[13,1,"Check passports and entry permits","Both","2026-11-06",0,"Check passport validity and whether you need an entry permit. Apply only on the official site.",0],
+[14,1,"Arrange contents insurance","Shane","2026-11-06",0,"Cover the new house from Wed 16 Dec. Keep flat cover until handover. Ask about goods in transit and any cover limits.",0],
+[15,1,"Research the shed","Shane","2026-11-06",0,"Measure the spot. Sheds on houses usually need no planning permission if low enough; conservation areas differ. Landlord consent is the real gate.",0],
+[16,1,"Declutter one area each weekend","Both","2026-11-08",0,"Fewer things means fewer boxes. Sell, donate or recycle first.",0],
+[17,1,"List unwanted furniture for sale","Dane","2026-11-08",0,"Listings need time to sell. Unsold items go to donation or bulky waste.",0],
+[18,1,"Book the end-of-tenancy clean for Sun 20 Dec","Dane","2026-11-13",0,"December fills up. Ask for oven, bathroom, windows and carpets, and what standard your landlord expects.",0],
+[19,1,"Order boxes, tape and moving bags","Shane","2026-11-13",0,"About 40 to 60 boxes, fewer after decluttering. Add wardrobe boxes, heavy bags, tape and markers. Ask your mover what they supply.",0],
+[23,1,"Order the wardrobe cover","Both","2026-11-15",0,"Deliver to the flat or a pickup point, then carry it over on move day.",0],
+[24,1,"Write the change-of-address list","Both","2026-11-15",0,"Banks, employers, HMRC, GP, dentist, insurers, phone, subscriptions, TV Licensing, electoral roll.",0],
+[20,1,"Apply for van parking at both addresses","Shane","2026-11-20",1,"The council needs 10 working days, so Fri 4 Dec at the very latest. Roughly £62 to £66 per bay per day plus an admin fee; a second bay is free on day one. Apply for Sat 19 Dec at both addresses, or ask your mover to.",0],
+[21,1,"Buy the no-drill alarm kit","Shane","2026-11-20",0,"Only after consent. Adhesive sensors, plug-in hub, mobile-data backup. Check any subscription. Delivery takes days, not weeks.",0],
+[22,1,"Book the early-morning car for Wed 23 Dec","Shane","2026-11-20",0,"An early departure means leaving in the small hours. Neither of you drives.",0],
+[26,2,"Pack the rarely used rooms","Both","2026-11-22",0,"Books, decor, spare bedding, off-season clothes. Label two sides with room and number.",0],
+[25,2,"Check the deposit is protected","Dane","2026-11-23",0,"30 days from payment. If no scheme details have arrived, chase your new landlords.",0],
+[27,2,"Set up Royal Mail redirection from Sat 19 Dec","Dane","2026-11-27",0,"Royal Mail needs 5 working days and suggests 3 weeks. Choose 12 months. Cancel before the start date for a refund.",0],
+[28,2,"Give the flat’s energy and water suppliers your leaving date","Dane","2026-11-27",0,"Date: Mon 21 Dec. At least 48 hours’ notice; up to 28 days ahead is fine. Send final readings.",0],
+[29,2,"Line up energy and water at the new house","Shane","2026-11-27",0,"Use the suppliers your new landlords name. Photograph the meters on Wed 16 Dec.",0],
+[30,4,"Tell the council tax office you’re moving within the borough","Both","2026-12-22",0,"One “moving within” form, about 10 minutes. It needs your signed new tenancy, your landlord’s signed and dated checkout report, and both landlords’ details. Keep paying until the final bill, which comes to your new address.",0],
+[31,2,"Book bulky waste for unsold items","Dane","2026-12-04",0,"Aim for a slot before Sun 13 Dec.",0],
+[32,2,"Ask your key holder to check the house","Dane","2026-12-06",0,"Agree when they’ll visit and how they’ll use the alarm.",0],
+[33,2,"Buy two timer plugs for lamps","Shane","2026-12-06",0,"For lamps in the evening.",0],
+[34,3,"Reconfirm removals and parking","Shane","2026-12-09",0,"Time, access at both ends, price, and that suspension signs are up.",0],
+[35,3,"Send the address changes","Both","2026-12-11",0,"Use Sat 19 Dec for post. Council tax has its own form (Tue 22 Dec).",0],
+[36,3,"Pack everything except the essentials","Both","2026-12-13",1,"Sat 12 or Sun 13 Dec. Leave out a week of clothes, travel luggage, first-night box and a cleaning kit.",0],
+[37,3,"Pack the first-night box","Both","2026-12-13",0,"Kettle, mugs, tea, bedding, towels, toiletries, chargers, tools, bulbs, loo roll, medication.",0],
+[38,3,"Set aside travel bags, passports and gifts","Both","2026-12-13",0,"These never go in a box.",0],
+[39,4,"Wed 16 Dec evening: keys, condition check, meters","Both","2026-12-16",0,"After work. Photograph every room and meter. Test smoke and CO alarms. Find the stopcock and fuse box.",0],
+[40,4,"Wed 16 Dec evening: fit the alarm","Shane","2026-12-16",0,"Use a phone hotspot if broadband isn’t live. Set up alerts on both phones.",0],
+[41,4,"Thu 17 Dec evening: suitcase runs","Both","2026-12-17",0,"Neither of you is off. Carry small things; take the bed only if you booked an evening slot.",0],
+[42,4,"Fri 18 Dec evening: last flat prep","Both","2026-12-18",0,"Defrost the freezer, strip beds, confirm the van time, charge phones.",0],
+[43,4,"Sat 19 Dec: main move day","Both","2026-12-19",1,"Check for damage before the crew leaves. Sleep at the new house. The flat must be empty tonight for the clean.",0],
+[44,4,"Sun 20 Dec: clean, photos and final readings at the flat","Dane","2026-12-20",0,"Cleaners in, then dated photos of every room and final meter readings.",0],
+[45,4,"Mon 21 Dec evening: keys back to your landlord","Dane","2026-12-21",0,"After work, at the agreed time. Get the end date, final rent and deposit amount in writing. Deposit is due back within 10 days of agreeing it. Sign and date a checkout report too.",0],
+[46,4,"Tue 22 Dec: test, lock up, pack","Both","2026-12-22",1,"Test alarm, Wi-Fi and alerts. Lock up. Hand over the spare key.",0],
+[47,5,"Chase the flat deposit","Dane","2027-01-05",0,"Due 10 days after you agree the amount: about Thu 31 Dec if agreed on 21 Dec.",0],
+[48,5,"Choose and build the shed","Both","2027-01-16",0,"Once your new landlords agree. Bikes stay indoors until then.",0],
+[49,5,"Compare energy tariffs","Shane","2027-01-16",0,"With a few weeks of readings.",0],
+[50,5,"Unpack the rest","Both","2027-01-31",0,"Comfortable, not finished.",0]];
+const $=i=>document.getElementById(i),TD=new Date();TD.setHours(12,0,0,0);
+const dt=i=>new Date(i+"T12:00:00"),df=(a,b)=>Math.round((dt(a)-dt(b))/864e5),dd=i=>Math.round((dt(i)-TD)/864e5);
+const fm=i=>{const d=dt(i);return W[d.getDay()]+" "+d.getDate()+" "+M[d.getMonth()]},iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,0)+"-"+String(d.getDate()).padStart(2,0);
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])),pc=(x,y)=>y?Math.round(100*x/y):0;
+let S={},V="b",F="All",H=false,DB=null,SY="";const sv=()=>{try{localStorage.setItem("lr1",JSON.stringify(S))}catch(e){}},sy=m=>{SY=m;render()};
+try{S=JSON.parse(localStorage.getItem("lr1"))||{}}catch(e){}
+function put(id,p){S[id]=Object.assign(S[id]||{},p);sv();
+ if(DB)DB.from("tracker").upsert({id,data:S[id]}).then(r=>{if(r.error)sy("Sync problem, saved on this device")});render()}
+function all(){const a=T.map(r=>({id:String(r[0]),s:r[1],t:r[2],o:r[3],u:r[4],c:r[5],h:r[6],d:r[7]}));
+ for(const k in S)if(S[k]&&S[k].x)a.push({id:k,s:S[k].s,t:esc(S[k].t),o:S[k].o,u:S[k].u,c:0,h:"",d:0});
+ a.forEach(t=>{const v=S[t.id]||{};if(v.d!=null)t.d=v.d;if(v.o)t.o=v.o;t.n=v.n||""});return a.sort((a,b)=>a.u<b.u?-1:a.u>b.u?1:0)}
+const od=t=>!t.d&&dd(t.u)<0;
+function card(t){return `<div class="c${t.c?" k":""}${t.d?" d":""}"><label><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><span class=tt>${t.t}</span></label><div class=m><span class="o o${t.o[0]}">${t.o}</span>${od(t)?'<span class=k2>Overdue</span>':""}<span>${fm(t.u)}</span>${t.c?'<span class=k2>Critical path</span>':""}</div>${t.h?`<div class=how>${t.h}</div>`:""}</div>`}
+function head(a){const n=a.length,dn=a.filter(t=>t.d).length,cr=a.filter(t=>t.c),cd=cr.filter(t=>t.d).length,ov=a.filter(od).length,cv=cr.filter(od).length,wk=a.filter(t=>!t.d&&dd(t.u)>=0&&dd(t.u)<=7),nx=cr.find(t=>!t.d);
+ return `<h1>Our moving tracker</h1><p class=mu>Keys Wed 16 Dec, move Sat 19 Dec, trip from Wed 23 Dec. <small>${SY}</small></p>
+<div class="g tiles">${K.map(k=>{const x=dd(k[1]);return `<div class=t><small>${k[0]}, ${fm(k[1])}</small><b>${x>0?x+" days":x==0?"Today":"Passed"}</b></div>`}).join("")}</div>
+<div class="g row"><div class=t><small>Overall progress</small><b>${pc(dn,n)}%</b><div class=bar><i style="width:${pc(dn,n)}%"></i></div><small>${dn} of ${n} tasks done${ov?`, <span class=k2>${ov} overdue</span>`:""}</small></div>
+<div class=t><small>Progress by owner</small>${OW.map(o=>{const l=a.filter(t=>t.o==o),d=l.filter(t=>t.d).length;return `<div class=ow><span class="o o${o[0]}">${o}</span><div class=bar><i style="width:${pc(d,l.length)}%"></i></div><small>${d}/${l.length}</small></div>`}).join("")}</div>
+<div class=t><small>Due in the next 7 days</small>${wk.length?wk.slice(0,4).map(t=>`<div><small>${fm(t.u)}</small> ${t.t}</div>`).join("")+(wk.length>4?`<small>and ${wk.length-4} more</small>`:""):"<div>Nothing due. Nice.</div>"}</div>
+<div class=t><small>Critical path</small><b>${cd} of ${cr.length}</b><div class=bar><i style="width:${pc(cd,cr.length)}%"></i></div><div>${cd==cr.length?"All clear":cv?`<span class=k2>${cv} overdue</span>`:"On track"}${nx?`<br><small>Next: ${nx.t}, ${fm(nx.u)}</small>`:""}</div></div></div>`}
+function board(a){return `<div class=cols>${SG.map((s,i)=>{const l=a.filter(t=>t.s==i);return `<section class=col><h3>${s[0]}</h3><small>${fm(s[1])} to ${fm(s[2])}, ${l.filter(t=>t.d).length} of ${l.length} done</small>${l.map(card).join("")}</section>`}).join("")}</div>`}
+function vis(a){return `<aside class=vis><h2>Settled at the new house, flat handed back, ready for the trip</h2><small>What done looks like</small><ul>${VI.map(v=>{const l=v[1].map(i=>a.find(t=>t.id==i)).filter(Boolean),n=l.filter(t=>t.d).length,y=n==l.length;return `<li><span class="ck${y?" y":""}">${y?"✓":""}</span><span>${v[0]}<br><small>${n} of ${l.length} tasks done</small></span></li>`}).join("")}</ul></aside>`}
+function tl(a){const R0="2026-10-24",N=73,p=d=>(df(d,R0)/N*100).toFixed(2);
+ return `<div class=tl><div class=tw>${["2026-11-01","2026-12-01","2027-01-01"].map(d=>`<div class=mo style="left:${p(d)}%">${M[dt(d).getMonth()]}</div>`).join("")}
+${SG.map(s=>`<div class=sb style="left:${p(s[1])}%;width:${((df(s[2],s[1])+1)/N*100).toFixed(2)}%" title="${s[0]}">${s[0]}</div>`).join("")}
+${MS.map((m,i)=>`<div class=fg style="left:${p(m[0])}%;top:${(i%4)*26}px;height:${128-(i%4)*26}px;${p(m[0])>88?"transform:translateX(-100%);border-left:0;border-right:2px solid var(--ac);padding:0 5px 0 0;text-align:right;":""}"><b>${m[1]}</b><br>${fm(m[0])}</div>`).join("")}
+${a.filter(t=>t.c).map(t=>`<div class="dot${t.d?" y":""}" style="left:${p(t.u)}%" title="${t.t}, ${fm(t.u)}"></div>`).join("")}
+<div class=td style="left:${Math.max(0,p(iso(TD)))}%" title="Today"></div></div><small>Dots are critical path tasks (green when done). The dashed line is today.</small></div>`}
+function list(a){const l=a.filter(t=>(F=="All"||t.o==F)&&!(H&&t.d));
+ return `<div class=fl>${["All",...OW].map(o=>`<button class="chip${F==o?" on":""}" data-f="${o}">${o}</button>`).join("")}<label><input type=checkbox id=hd${H?" checked":""}> Hide done</label></div>
+<details><summary>Add a task</summary><div class=af><input id=nt placeholder="Task"><select id=no>${OW.map(o=>`<option>${o}</option>`).join("")}</select><input id=nd type=date value="${iso(TD)}"><select id=ns>${SG.map((s,i)=>`<option value=${i}>${s[0]}</option>`).join("")}</select><button id=ad>Add</button></div></details>
+${SG.map((s,i)=>{const x=l.filter(t=>t.s==i);return x.length?`<h3>${s[0]}</h3><small>${fm(s[1])} to ${fm(s[2])}</small><div style="margin-top:6px">${x.map(t=>`<div class="r${t.d?" d":""}"><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><div><b class=tt>${t.t}</b>${t.c?' <span class=k2>Critical path</span>':""}<div class=how style="margin-left:0">${t.h}</div></div><select data-o="${t.id}">${OW.map(o=>`<option${o==t.o?" selected":""}>${o}</option>`).join("")}</select><span class="${od(t)?"k2":""}">${fm(t.u)}</span><input class=nt data-n="${t.id}" placeholder="Notes" value="${esc(t.n)}"></div>`).join("")}</div>`:""}).join("")}`}
+function render(){const a=all(),c=document.querySelector(".cols"),sl=c?c.scrollLeft:0;
+ $("app").innerHTML=head(a)+`<nav>${[["b","Board"],["t","Timeline"],["c","Checklist"]].map(v=>`<button class="${V==v[0]?"on":""}" data-v="${v[0]}">${v[1]}</button>`).join("")}</nav>`+(V=="b"?`<div class=main>${board(a)}${vis(a)}</div>`:V=="t"?`<div class=main>${tl(a)}${vis(a)}</div>`:`<div class=main><div>${list(a)}</div>${vis(a)}</div>`);
+ const c2=document.querySelector(".cols");if(c2)c2.scrollLeft=sl}
+document.addEventListener("change",e=>{const t=e.target,d=t.dataset;if(d.i)put(d.i,{d:+t.checked});else if(d.o)put(d.o,{o:t.value});else if(d.n)put(d.n,{n:t.value});else if(t.id=="hd"){H=t.checked;render()}});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-v],[data-f],#ad");if(!b)return;
+ if(b.dataset.v){V=b.dataset.v;render()}else if(b.dataset.f){F=b.dataset.f;render()}else{const ti=$("nt").value.trim();if(ti)put("x"+Date.now(),{x:1,t:ti,o:$("no").value,u:$("nd").value||iso(TD),s:+$("ns").value,d:0})}});
+render();
+(async()=>{if(!SB_URL||!SB_KEY||!window.supabase){sy("Saved on this device only");return}
+ try{const c=supabase.createClient(SB_URL,SB_KEY),r=await c.from("tracker").select("id,data");if(r.error)throw r.error;
+ const have={};r.data.forEach(x=>{have[x.id]=1;S[x.id]=x.data});
+ const miss=Object.keys(S).filter(k=>!have[k]).map(k=>({id:k,data:S[k]}));if(miss.length)await c.from("tracker").upsert(miss);
+ DB=c;sv();sy("Synced with everyone");
+ c.channel("tr").on("postgres_changes",{event:"*",schema:"public",table:"tracker"},p=>{if(p.new&&p.new.id){S[p.new.id]=p.new.data;sv();render()}}).subscribe()}
+ catch(e){sy("Sync problem, saved on this device")}})();
+</script></body></html>
