@@ -50,6 +50,12 @@ details{background:var(--sf);border:1px solid var(--ln);border-radius:10px;paddi
 .dot{top:176px;width:13px;height:13px;margin-left:-6px;border-radius:50%;background:var(--cr)}.dot.y{background:var(--ok)}
 .mo{top:106px;font-size:12px;color:var(--mu);border-left:1px solid var(--ln);height:105px;padding-left:4px}
 .td{top:0;height:212px;border-left:2px dashed var(--cr)}
+.hd{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 2px;font-size:13px}
+.st{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ln);background:var(--sf);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer}
+.st i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--mu)}
+.st.live i{background:var(--ok)}.st.save i{background:var(--cB)}.st.off i{background:var(--cr)}
+.del{border:1px solid var(--ln);background:var(--sf);border-radius:6px;cursor:pointer;padding:1px 8px;color:var(--mu);font-size:12px;font-weight:400}
+.by{color:var(--ok)}
 </style></head><body><div class="w"><div id="app"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
@@ -116,17 +122,77 @@ const $=i=>document.getElementById(i),TD=new Date();TD.setHours(12,0,0,0);
 const dt=i=>new Date(i+"T12:00:00"),df=(a,b)=>Math.round((dt(a)-dt(b))/864e5),dd=i=>Math.round((dt(i)-TD)/864e5);
 const fm=i=>{const d=dt(i);return W[d.getDay()]+" "+d.getDate()+" "+M[d.getMonth()]},iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,0)+"-"+String(d.getDate()).padStart(2,0);
 const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])),pc=(x,y)=>y?Math.round(100*x/y):0;
-let S={},V="b",F="All",H=false,DB=null,SY="";const sv=()=>{try{localStorage.setItem("lr1",JSON.stringify(S))}catch(e){}},sy=m=>{SY=m;render()};
-try{S=JSON.parse(localStorage.getItem("lr1"))||{}}catch(e){}
-function put(id,p){S[id]=Object.assign(S[id]||{},p);sv();
- if(DB)DB.from("tracker").upsert({id,data:S[id]}).then(r=>{if(r.error)sy("Sync problem, saved on this device")});render()}
-function all(){const a=T.map(r=>({id:String(r[0]),s:r[1],t:r[2],o:r[3],u:r[4],c:r[5],h:r[6],d:r[7]}));
- for(const k in S)if(S[k]&&S[k].x)a.push({id:k,s:S[k].s,t:esc(S[k].t),o:S[k].o,u:S[k].u,c:0,h:"",d:0});
- a.forEach(t=>{const v=S[t.id]||{};if(v.d!=null)t.d=v.d;if(v.o)t.o=v.o;t.n=v.n||""});return a.sort((a,b)=>a.u<b.u?-1:a.u>b.u?1:0)}
+/* ---- local store: state, the unsent-write queue, and who this device is ---- */
+const rd=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+      wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let S=rd("lr1",{})||{},Q=rd("lr1q",{})||{},ME=rd("lr1me","")||"";
+let V="b",F="All",H=false,DB=null,CH=null,SY="",ST="wait",SEQ=0,FL=0,BO=1e3,RB=1e3;
+const sv=()=>wr("lr1",S),svq=()=>wr("lr1q",Q);
+const sy=(st,m)=>{ST=st;SY=m||"";render()};
+const ad=t=>{const d=new Date(t);return isNaN(d)?"":d.getDate()+" "+M[d.getMonth()]};
+const qn=()=>Object.keys(Q).length;
+
+/* Every edit: write locally first, queue it, then push. Nothing is lost if the
+   network drops, the tab closes, or Supabase is briefly unreachable. */
+function put(id,p){
+ S[id]=Object.assign({},S[id]||{},p,{by:ME||null,at:new Date().toISOString()});
+ sv();Q[id]=++SEQ;svq();render();flush()}
+
+function drop(id){
+ delete S[id];delete Q[id];sv();svq();render();
+ if(DB)DB.from("tracker").delete().eq("id",id).then(r=>{if(r.error)sy("off","that removal did not reach the server")})}
+
+/* Push the queue in one batch. On failure, keep it and back off. */
+async function flush(){
+ if(!DB||FL)return;
+ const ids=Object.keys(Q);
+ if(!ids.length){if(ST!=="live")sy("live");return}
+ FL=1;if(ST!=="save")sy("save");
+ const snap={};ids.forEach(i=>snap[i]=Q[i]);
+ let err=null;
+ try{const r=await DB.from("tracker").upsert(ids.map(id=>({id,data:S[id]})));err=r.error}catch(e){err=e}
+ FL=0;
+ if(err){BO=Math.min(BO*2,3e4);sy("off");setTimeout(flush,BO);return}
+ BO=1e3;ids.forEach(id=>{if(Q[id]===snap[id])delete Q[id]});svq();
+ qn()?flush():sy("live")}
+
+/* A change from the other person. A row we have not pushed yet always wins,
+   so your own tick is never undone by an older copy coming back. */
+function remote(id,data){
+ if(Q[id])return;
+ if(data==null)delete S[id];else S[id]=data;
+ sv();render()}
+
+/* Full re-read: on connect, on waking, and whenever the status chip is tapped. */
+async function pull(){
+ if(!DB)return;
+ let r;try{r=await DB.from("tracker").select("id,data")}catch(e){r={error:e}}
+ if(r.error){sy("off","could not read the shared plan");return}
+ const next={};r.data.forEach(x=>next[x.id]=x.data);
+ for(const id in Q)next[id]=S[id];
+ S=next;sv();qn()?flush():sy("live")}
+
+/* Realtime, with its own reconnect. Handles removals as well as edits. */
+function sub(){
+ if(!DB)return;
+ if(CH){try{DB.removeChannel(CH)}catch(e){}CH=null}
+ CH=DB.channel("tr"+Date.now()).on("postgres_changes",{event:"*",schema:"public",table:"tracker"},x=>{
+   const id=(x.new&&x.new.id)||(x.old&&x.old.id);if(!id)return;
+   remote(id,x.eventType==="DELETE"?null:x.new.data)})
+  .subscribe(st=>{
+   if(st==="SUBSCRIBED"){RB=1e3;pull()}
+   else if(st==="CHANNEL_ERROR"||st==="TIMED_OUT"||st==="CLOSED"){sy("off","live updates dropped, retrying");RB=Math.min(RB*2,3e4);setTimeout(sub,RB)}})}
+function all(){const a=T.map(r=>({id:String(r[0]),s:r[1],t:r[2],o:r[3],u:r[4],c:r[5],h:r[6],d:r[7],x:0}));
+ for(const k in S)if(S[k]&&S[k].x)a.push({id:k,s:S[k].s,t:esc(S[k].t),o:S[k].o,u:S[k].u,c:0,h:"",d:0,x:1});
+ a.forEach(t=>{const v=S[t.id]||{};if(v.d!=null)t.d=v.d;if(v.o)t.o=v.o;t.n=v.n||"";t.by=v.by||"";t.at=v.at||""});return a.sort((a,b)=>a.u<b.u?-1:a.u>b.u?1:0)}
 const od=t=>!t.d&&dd(t.u)<0;
-function card(t){return `<div class="c${t.c?" k":""}${t.d?" d":""}"><label><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><span class=tt>${t.t}</span></label><div class=m><span class="o o${t.o[0]}">${t.o}</span>${od(t)?'<span class=k2>Overdue</span>':""}<span>${fm(t.u)}</span>${t.c?'<span class=k2>Critical path</span>':""}</div>${t.h?`<div class=how>${t.h}</div>`:""}</div>`}
+function chip(){const n=qn(),t=ST==="live"?"Shared and live":ST==="save"?"Saving "+n+(n==1?" change":" changes"):ST==="wait"?"Connecting":n?n+(n==1?" change":" changes")+" waiting":"Not connected";
+ return `<button class="st ${ST}" id=sbtn title="Tap to refresh now"><i></i>${t}${SY?" \u00b7 "+esc(SY):""}</button>`}
+function who(){return ME?`<button class=chip data-me="">This device: ${esc(ME)}</button>`
+ :`<span>Who is on this device?</span>`+OW.slice(0,2).map(o=>`<button class=chip data-me="${o}">${o}</button>`).join("")}
+function card(t){return `<div class="c${t.c?" k":""}${t.d?" d":""}"><label><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><span class=tt>${t.t}</span></label><div class=m><span class="o o${t.o[0]}">${t.o}</span>${od(t)?'<span class=k2>Overdue</span>':""}<span>${fm(t.u)}</span>${t.c?'<span class=k2>Critical path</span>':""}${t.d&&t.by?`<span class=by>\u2713 ${esc(t.by)}${t.at?", "+ad(t.at):""}</span>`:""}</div>${t.h?`<div class=how>${t.h}</div>`:""}</div>`}
 function head(a){const n=a.length,dn=a.filter(t=>t.d).length,cr=a.filter(t=>t.c),cd=cr.filter(t=>t.d).length,ov=a.filter(od).length,cv=cr.filter(od).length,wk=a.filter(t=>!t.d&&dd(t.u)>=0&&dd(t.u)<=7),nx=cr.find(t=>!t.d);
- return `<h1>Our moving tracker</h1><p class=mu>Keys Wed 16 Dec, move Sat 19 Dec, trip from Wed 23 Dec. <small>${SY}</small></p>
+ return `<h1>Our moving tracker</h1><p class=mu>Keys Wed 16 Dec, move Sat 19 Dec, trip from Wed 23 Dec.</p><div class=hd>${chip()}${who()}</div>
 <div class="g tiles">${K.map(k=>{const x=dd(k[1]);return `<div class=t><small>${k[0]}, ${fm(k[1])}</small><b>${x>0?x+" days":x==0?"Today":"Passed"}</b></div>`}).join("")}</div>
 <div class="g row"><div class=t><small>Overall progress</small><b>${pc(dn,n)}%</b><div class=bar><i style="width:${pc(dn,n)}%"></i></div><small>${dn} of ${n} tasks done${ov?`, <span class=k2>${ov} overdue</span>`:""}</small></div>
 <div class=t><small>Progress by owner</small>${OW.map(o=>{const l=a.filter(t=>t.o==o),d=l.filter(t=>t.d).length;return `<div class=ow><span class="o o${o[0]}">${o}</span><div class=bar><i style="width:${pc(d,l.length)}%"></i></div><small>${d}/${l.length}</small></div>`}).join("")}</div>
@@ -143,19 +209,52 @@ ${a.filter(t=>t.c).map(t=>`<div class="dot${t.d?" y":""}" style="left:${p(t.u)}%
 function list(a){const l=a.filter(t=>(F=="All"||t.o==F)&&!(H&&t.d));
  return `<div class=fl>${["All",...OW].map(o=>`<button class="chip${F==o?" on":""}" data-f="${o}">${o}</button>`).join("")}<label><input type=checkbox id=hd${H?" checked":""}> Hide done</label></div>
 <details><summary>Add a task</summary><div class=af><input id=nt placeholder="Task"><select id=no>${OW.map(o=>`<option>${o}</option>`).join("")}</select><input id=nd type=date value="${iso(TD)}"><select id=ns>${SG.map((s,i)=>`<option value=${i}>${s[0]}</option>`).join("")}</select><button id=ad>Add</button></div></details>
-${SG.map((s,i)=>{const x=l.filter(t=>t.s==i);return x.length?`<h3>${s[0]}</h3><small>${fm(s[1])} to ${fm(s[2])}</small><div style="margin-top:6px">${x.map(t=>`<div class="r${t.d?" d":""}"><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><div><b class=tt>${t.t}</b>${t.c?' <span class=k2>Critical path</span>':""}<div class=how style="margin-left:0">${t.h}</div></div><select data-o="${t.id}">${OW.map(o=>`<option${o==t.o?" selected":""}>${o}</option>`).join("")}</select><span class="${od(t)?"k2":""}">${fm(t.u)}</span><input class=nt data-n="${t.id}" placeholder="Notes" value="${esc(t.n)}"></div>`).join("")}</div>`:""}).join("")}`}
+${SG.map((s,i)=>{const x=l.filter(t=>t.s==i);return x.length?`<h3>${s[0]}</h3><small>${fm(s[1])} to ${fm(s[2])}</small><div style="margin-top:6px">${x.map(t=>`<div class="r${t.d?" d":""}"><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><div><b class=tt>${t.t}</b>${t.c?' <span class=k2>Critical path</span>':""}${t.x?` <button class=del data-x="${t.id}">Remove</button>`:""}<div class=how style="margin-left:0">${t.h}</div>${t.d&&t.by?`<div class="how by" style="margin-left:0">\u2713 ${esc(t.by)}${t.at?", "+ad(t.at):""}</div>`:""}</div><select data-o="${t.id}">${OW.map(o=>`<option${o==t.o?" selected":""}>${o}</option>`).join("")}</select><span class="${od(t)?"k2":""}">${fm(t.u)}</span><input class=nt data-n="${t.id}" placeholder="Notes" value="${esc(t.n)}"></div>`).join("")}</div>`:""}).join("")}`}
 function render(){const a=all(),c=document.querySelector(".cols"),sl=c?c.scrollLeft:0;
+ /* A remote edit re-renders the page, so remember where the cursor was and what
+    was being typed, and put it back afterwards. */
+ const ae=document.activeElement,ds=ae&&ae.dataset||{},
+  fk=ds.n?"n|"+ds.n:ds.o?"o|"+ds.o:ds.i?"i|"+ds.i:ae&&ae.id?"#|"+ae.id:"",
+  fv=ae&&ae.value,ss=ae&&ae.selectionStart,se=ae&&ae.selectionEnd;
  $("app").innerHTML=head(a)+`<nav>${[["b","Board"],["t","Timeline"],["c","Checklist"]].map(v=>`<button class="${V==v[0]?"on":""}" data-v="${v[0]}">${v[1]}</button>`).join("")}</nav>`+(V=="b"?`<div class=main>${board(a)}${vis(a)}</div>`:V=="t"?`<div class=main>${tl(a)}${vis(a)}</div>`:`<div class=main><div>${list(a)}</div>${vis(a)}</div>`);
- const c2=document.querySelector(".cols");if(c2)c2.scrollLeft=sl}
-document.addEventListener("change",e=>{const t=e.target,d=t.dataset;if(d.i)put(d.i,{d:+t.checked});else if(d.o)put(d.o,{o:t.value});else if(d.n)put(d.n,{n:t.value});else if(t.id=="hd"){H=t.checked;render()}});
-document.addEventListener("click",e=>{const b=e.target.closest("[data-v],[data-f],#ad");if(!b)return;
- if(b.dataset.v){V=b.dataset.v;render()}else if(b.dataset.f){F=b.dataset.f;render()}else{const ti=$("nt").value.trim();if(ti)put("x"+Date.now(),{x:1,t:ti,o:$("no").value,u:$("nd").value||iso(TD),s:+$("ns").value,d:0})}});
+ const c2=document.querySelector(".cols");if(c2)c2.scrollLeft=sl;
+ if(fk){const[k,v]=fk.split("|"),el=document.querySelector(k==="#"?"#"+CSS.escape(v):"[data-"+k+'="'+CSS.escape(v)+'"]');
+  if(el){el.focus();if(k==="n"&&fv!=null&&el.value!==fv)el.value=fv;
+   if(ss!=null&&el.setSelectionRange)try{el.setSelectionRange(ss,se)}catch(e){}}}}
+const NT={};
+document.addEventListener("change",e=>{const t=e.target,d=t.dataset;
+ if(d.i)put(d.i,{d:+t.checked});else if(d.o)put(d.o,{o:t.value});
+ else if(d.n){clearTimeout(NT[d.n]);delete NT[d.n];put(d.n,{n:t.value})}
+ else if(t.id=="hd"){H=t.checked;render()}});
+/* Notes save as they are typed, so a note is never lost to a re-render. */
+document.addEventListener("input",e=>{const d=e.target.dataset;if(!d.n)return;
+ const id=d.n,v=e.target.value;clearTimeout(NT[id]);NT[id]=setTimeout(()=>{delete NT[id];put(id,{n:v})},700)});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-v],[data-f],[data-me],[data-x],#ad,#sbtn");if(!b)return;
+ const d=b.dataset;
+ if(d.v){V=d.v;render()}
+ else if(d.f){F=d.f;render()}
+ else if(d.me!=null){ME=d.me;wr("lr1me",ME);render()}
+ else if(d.x){if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Tap again";return}drop(d.x)}
+ else if(b.id=="sbtn"){sy(ST,"refreshing");pull();flush();sub()}
+ else{const ti=$("nt").value.trim();if(ti)put("x"+Date.now(),{x:1,t:ti,o:$("no").value,u:$("nd").value||iso(TD),s:+$("ns").value,d:0})}});
+addEventListener("online",()=>{BO=1e3;pull();flush();sub()});
+addEventListener("offline",()=>sy("off","this device is offline"));
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&DB){pull();flush()}});
 render();
-(async()=>{if(!SB_URL||!SB_KEY||!window.supabase){sy("Saved on this device only");return}
- try{const c=supabase.createClient(SB_URL,SB_KEY),r=await c.from("tracker").select("id,data");if(r.error)throw r.error;
- const have={};r.data.forEach(x=>{have[x.id]=1;S[x.id]=x.data});
- const miss=Object.keys(S).filter(k=>!have[k]).map(k=>({id:k,data:S[k]}));if(miss.length)await c.from("tracker").upsert(miss);
- DB=c;sv();sy("Synced with everyone");
- c.channel("tr").on("postgres_changes",{event:"*",schema:"public",table:"tracker"},p=>{if(p.new&&p.new.id){S[p.new.id]=p.new.data;sv();render()}}).subscribe()}
- catch(e){sy("Sync problem, saved on this device")}})();
+/* Connect, adopt the server as the source of truth, keep anything unsent,
+   then go live. Retries on its own if Supabase is not reachable yet. */
+let TRY=0;
+(async function boot(){
+ if(!SB_URL||!SB_KEY){sy("off","add your Supabase details to share this plan");return}
+ if(!window.supabase){TRY++;sy("off","loading the sync library");setTimeout(boot,Math.min(1e3*TRY,15e3));return}
+ try{
+  const c=supabase.createClient(SB_URL,SB_KEY);
+  const r=await c.from("tracker").select("id,data");if(r.error)throw r.error;
+  const have={};r.data.forEach(x=>have[x.id]=1);
+  /* One-off: lift ticks made on this device before the shared table existed. */
+  if(!rd("lr1seed",0)){Object.keys(S).forEach(k=>{if(!have[k])Q[k]=++SEQ});wr("lr1seed",1);svq()}
+  const next={};r.data.forEach(x=>next[x.id]=x.data);
+  for(const id in Q)next[id]=S[id];
+  S=next;sv();DB=c;TRY=0;sy("live");sub();flush()}
+ catch(e){TRY++;sy("off",TRY<2?"reconnecting":"cannot reach the shared plan, your changes are saved here");setTimeout(boot,Math.min(2e3*TRY,3e4))}})();
 </script></body></html>
