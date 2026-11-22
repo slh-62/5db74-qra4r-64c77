@@ -56,7 +56,27 @@ details{background:var(--sf);border:1px solid var(--ln);border-radius:10px;paddi
 .st.live i{background:var(--ok)}.st.save i{background:var(--cB)}.st.off i{background:var(--cr)}
 .del{border:1px solid var(--ln);background:var(--sf);border-radius:6px;cursor:pointer;padding:1px 8px;color:var(--mu);font-size:12px;font-weight:400}
 .by{color:var(--ok)}
-</style></head><body><div class="w"><div id="app"></div></div>
+input,select,textarea{font-size:16px}
+.eb{border:1px solid var(--ln);background:var(--bg);border-radius:16px;padding:6px 14px;min-height:36px;cursor:pointer;margin-left:auto;color:var(--ink)}
+.r .du{width:100%;max-width:420px;background:var(--bg);border:1px solid var(--ln);border-radius:6px;padding:5px 7px;min-height:38px}
+.r .eb{justify-self:start;margin-left:0}
+@media(min-width:800px){.r{grid-template-columns:24px 1fr 100px 150px 200px 64px}}
+@media(max-width:700px){.cols{flex-direction:column;overflow:visible}.col{flex:none;width:100%}.r select,.r .nt{min-height:42px}}
+@media(pointer:coarse){input[type=checkbox]{width:24px;height:24px}.m,.how{margin-left:34px}}
+#sh{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+#sh[hidden]{display:none}
+.sc{background:var(--sf);color:var(--ink);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:14px 14px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+@media(min-width:600px){#sh{align-items:center}.sc{border-radius:14px}}
+.sc label{display:block;font-size:13px;color:var(--mu);margin-top:10px}
+.sc input,.sc select,.sc textarea{display:block;width:100%;margin-top:4px;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:10px;min-height:44px;color:var(--ink)}
+.sc textarea{min-height:90px}
+.sc .cb{display:flex;align-items:center;gap:10px;color:var(--ink);font-size:16px}
+.sc .cb input{width:24px;height:24px;min-height:0;margin:0}
+.qb,.ba{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.qb button,.ba button{flex:1 1 90px;min-height:44px;border:1px solid var(--ln);background:var(--bg);color:var(--ink);border-radius:8px;cursor:pointer}
+.ba #es{background:var(--ac);color:var(--sf);border-color:var(--ac);font-weight:600}
+.ba #er{color:var(--cr)}
+</style></head><body><div class="w"><div id="app"></div></div><div id="sh" hidden></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 // 1. Paste your Supabase details between the quotes (see the setup steps).
@@ -77,15 +97,15 @@ const T=[
 [7,0,"Book removals for Sat 19 Dec","Shane","2026-10-30",1,"Peak weekend before Christmas. Get time, both addresses, access notes, parking and price in writing.",0],
 [8,0,"Move your broadband to the new house","Dane","2026-10-30",1,"Ask for go-live on Sat 19 Dec; the old line often ends the same day. Check coverage, exit fees and whether an engineer visit is needed.",0],
 [9,0,"Get your landlord’s early end date in writing","Dane","2026-10-30",0,"End Mon 21 Dec, rent apportioned, deposit terms, evening handover. Without it, notice must end on a rent-period boundary, so about 31 Dec: up to 10 days of extra rent and council tax. Also ask him to sign a dated checkout report at handover; the council needs it.",0],
-[10,0,"Order the Ottoman bed (and any desk or storage)","Both","2026-11-01",0,"Delivery after 16 Dec. Neither of you is off on Thu 17, so ask for Sat 19 or an evening slot. Decide what happens to the old bed.",0],
-[11,0,"Find the flat’s inventory, rent date and deposit scheme","Dane","2026-11-01",0,"The check-in inventory is your best evidence of fair wear and tear.",0],
+[10,2,"Order the Ottoman bed (and any desk or storage)","Both","2026-12-04",0,"Check the delivery date before you pay: pre-Christmas stock and slots run out. You need it after Wed 16 Dec. Neither of you is off on Thu 17, so ask for Sat 19 or an evening slot. Decide what happens to the old bed.",0],
+[11,0,"Find the flat’s inventory, rent date, deposit scheme and cleaning clause","Dane","2026-11-01",0,"The check-in inventory is your best evidence of fair wear and tear. Check what the tenancy says about cleaning.",0],
 [12,0,"List every bill and contract with its notice period","Dane","2026-11-01",0,"Some contracts need 30 days; most energy suppliers need 48 hours. Write each date down.",0],
 [13,1,"Check passports and entry permits","Both","2026-11-06",0,"Check passport validity and whether you need an entry permit. Apply only on the official site.",0],
-[14,1,"Arrange contents insurance","Shane","2026-11-06",0,"Cover the new house from Wed 16 Dec. Keep flat cover until handover. Ask about goods in transit and any cover limits.",0],
+[14,2,"Arrange contents insurance","Shane","2026-12-04",0,"Cover the new house from Wed 16 Dec. Keep flat cover until handover. Ask about goods in transit and any cover limits.",0],
 [15,1,"Research the shed","Shane","2026-11-06",0,"Measure the spot. Sheds on houses usually need no planning permission if low enough; conservation areas differ. Landlord consent is the real gate.",0],
 [16,1,"Declutter one area each weekend","Both","2026-11-08",0,"Fewer things means fewer boxes. Sell, donate or recycle first.",0],
 [17,1,"List unwanted furniture for sale","Dane","2026-11-08",0,"Listings need time to sell. Unsold items go to donation or bulky waste.",0],
-[18,1,"Book the end-of-tenancy clean for Sun 20 Dec","Dane","2026-11-13",0,"December fills up. Ask for oven, bathroom, windows and carpets, and what standard your landlord expects.",0],
+[18,1,"Decide on the end clean: professionals or do it yourselves","Dane","2026-11-13",0,"You don’t have to hire professionals, but the flat must be as clean as you found it (fair wear and tear excepted), or cleaning costs can come off the deposit. Judge by your inventory and photos. If you hire, book now: December fills up. Ask for oven, bathroom, windows and carpets, and what standard your landlord expects.",0],
 [19,1,"Order boxes, tape and moving bags","Shane","2026-11-13",0,"About 40 to 60 boxes, fewer after decluttering. Add wardrobe boxes, heavy bags, tape and markers. Ask your mover what they supply.",0],
 [23,1,"Order the wardrobe cover","Both","2026-11-15",0,"Deliver to the flat or a pickup point, then carry it over on move day.",0],
 [24,1,"Write the change-of-address list","Both","2026-11-15",0,"Banks, employers, HMRC, GP, dentist, insurers, phone, subscriptions, TV Licensing, electoral roll.",0],
@@ -111,13 +131,19 @@ const T=[
 [41,4,"Thu 17 Dec evening: suitcase runs","Both","2026-12-17",0,"Neither of you is off. Carry small things; take the bed only if you booked an evening slot.",0],
 [42,4,"Fri 18 Dec evening: last flat prep","Both","2026-12-18",0,"Defrost the freezer, strip beds, confirm the van time, charge phones.",0],
 [43,4,"Sat 19 Dec: main move day","Both","2026-12-19",1,"Check for damage before the crew leaves. Sleep at the new house. The flat must be empty tonight for the clean.",0],
-[44,4,"Sun 20 Dec: clean, photos and final readings at the flat","Dane","2026-12-20",0,"Cleaners in, then dated photos of every room and final meter readings.",0],
+[44,4,"Sun 20 Dec: clean, photos and final readings at the flat","Dane","2026-12-20",0,"Cleaners in, or your own clean. Then dated photos of every room and final meter readings.",0],
 [45,4,"Mon 21 Dec evening: keys back to your landlord","Dane","2026-12-21",0,"After work, at the agreed time. Get the end date, final rent and deposit amount in writing. Deposit is due back within 10 days of agreeing it. Sign and date a checkout report too.",0],
 [46,4,"Tue 22 Dec: test, lock up, pack","Both","2026-12-22",1,"Test alarm, Wi-Fi and alerts. Lock up. Hand over the spare key.",0],
 [47,5,"Chase the flat deposit","Dane","2027-01-05",0,"Due 10 days after you agree the amount: about Thu 31 Dec if agreed on 21 Dec.",0],
 [48,5,"Choose and build the shed","Both","2027-01-16",0,"Once your new landlords agree. Bikes stay indoors until then.",0],
 [49,5,"Compare energy tariffs","Shane","2027-01-16",0,"With a few weeks of readings.",0],
-[50,5,"Unpack the rest","Both","2027-01-31",0,"Comfortable, not finished.",0]];
+[50,5,"Unpack the rest","Both","2027-01-31",0,"Comfortable, not finished.",0],
+[51,2,"Disassemble the bed","Both","2026-11-27",0,"Photograph each step and bag the screws in a labelled bag taped to the frame. Decide where you will sleep until the move, for example the mattress on the floor.",0],
+[52,2,"Order the wardrobe doors","Both","2026-12-04",0,"Measure the opening twice. Check the delivery or made-to-measure lead time before you pay, as December slots fill up. Deliver to the new house after Wed 16 Dec.",0],
+[53,2,"Ask a friend for the car for the skip","Both","2026-12-04",0,"Agree the day, whether they drive and how long you need the car. Check whether the skip needs a council permit if it will sit on the road.",0],
+[54,2,"Pick what items to keep","Both","2026-11-28",0,"Go room by room. Anything you are not keeping goes to sale, donation or the skip.",0],
+[55,2,"Look at the division board together","Both","2026-11-28",0,"Go through it together and note any decisions on this task.",0],
+[56,5,"Paint the flat","Both","2027-01-17",0,"Second week of January, after you are back. Get your landlord’s written OK on colours first, as it is rented. Buy paint, tape and dust sheets beforehand.",0]];
 const $=i=>document.getElementById(i),TD=new Date();TD.setHours(12,0,0,0);
 const dt=i=>new Date(i+"T12:00:00"),df=(a,b)=>Math.round((dt(a)-dt(b))/864e5),dd=i=>Math.round((dt(i)-TD)/864e5);
 const fm=i=>{const d=dt(i);return W[d.getDay()]+" "+d.getDate()+" "+M[d.getMonth()]},iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,0)+"-"+String(d.getDate()).padStart(2,0);
@@ -182,15 +208,18 @@ function sub(){
   .subscribe(st=>{
    if(st==="SUBSCRIBED"){RB=1e3;pull()}
    else if(st==="CHANNEL_ERROR"||st==="TIMED_OUT"||st==="CLOSED"){sy("off","live updates dropped, retrying");RB=Math.min(RB*2,3e4);setTimeout(sub,RB)}})}
-function all(){const a=T.map(r=>({id:String(r[0]),s:r[1],t:r[2],o:r[3],u:r[4],c:r[5],h:r[6],d:r[7],x:0}));
- for(const k in S)if(S[k]&&S[k].x)a.push({id:k,s:S[k].s,t:esc(S[k].t),o:S[k].o,u:S[k].u,c:0,h:"",d:0,x:1});
- a.forEach(t=>{const v=S[t.id]||{};if(v.d!=null)t.d=v.d;if(v.o)t.o=v.o;t.n=v.n||"";t.by=v.by||"";t.at=v.at||""});return a.sort((a,b)=>a.u<b.u?-1:a.u>b.u?1:0)}
+const stg=u=>{for(let i=0;i<SG.length;i++)if(u>=SG[i][1]&&u<=SG[i][2])return i;return u>SG[4][2]?5:0};
+let ET=null,RC=0;
+function all(){const a=T.map(r=>({id:String(r[0]),s:r[1],r:r[2],o:r[3],u:r[4],c:r[5],h:r[6],d:r[7],x:0}));
+ for(const k in S)if(S[k]&&S[k].x)a.push({id:k,s:S[k].s,r:S[k].t||"",o:S[k].o,u:S[k].u,c:0,h:"",d:0,x:1});
+ a.forEach(t=>{const v=S[t.id]||{};if(v.d!=null)t.d=v.d;if(v.o)t.o=v.o;if(v.u)t.u=v.u;if(v.s!=null)t.s=v.s;if(v.t)t.r=v.t;t.t=esc(t.r);t.n=v.n||"";t.by=v.by||"";t.at=v.at||""});
+ return a.filter(t=>!(S[t.id]&&S[t.id].del)).sort((a,b)=>a.u<b.u?-1:a.u>b.u?1:0)}
 const od=t=>!t.d&&dd(t.u)<0;
 function chip(){const n=qn(),t=ST==="live"?"Shared and live":ST==="save"?"Saving "+n+(n==1?" change":" changes"):ST==="wait"?"Connecting":n?n+(n==1?" change":" changes")+" waiting":"Not connected";
  return `<button class="st ${ST}" id=sbtn title="Tap to refresh now"><i></i>${t}${SY?" \u00b7 "+esc(SY):""}</button>`}
 function who(){return ME?`<button class=chip data-me="">This device: ${esc(ME)}</button>`
  :`<span>Who is on this device?</span>`+OW.slice(0,2).map(o=>`<button class=chip data-me="${o}">${o}</button>`).join("")}
-function card(t){return `<div class="c${t.c?" k":""}${t.d?" d":""}"><label><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><span class=tt>${t.t}</span></label><div class=m><span class="o o${t.o[0]}">${t.o}</span>${od(t)?'<span class=k2>Overdue</span>':""}<span>${fm(t.u)}</span>${t.c?'<span class=k2>Critical path</span>':""}${t.d&&t.by?`<span class=by>\u2713 ${esc(t.by)}${t.at?", "+ad(t.at):""}</span>`:""}</div>${t.h?`<div class=how>${t.h}</div>`:""}</div>`}
+function card(t){return `<div class="c${t.c?" k":""}${t.d?" d":""}"><label><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><span class=tt>${t.t}</span></label><div class=m><span class="o o${t.o[0]}">${t.o}</span>${od(t)?'<span class=k2>Overdue</span>':""}<span>${fm(t.u)}</span>${t.c?'<span class=k2>Critical path</span>':""}${t.d&&t.by?`<span class=by>\u2713 ${esc(t.by)}${t.at?", "+ad(t.at):""}</span>`:""}<button class=eb data-e="${t.id}">Edit</button></div>${t.h?`<div class=how>${t.h}</div>`:""}${t.n?`<div class=how>Note: ${esc(t.n)}</div>`:""}</div>`}
 function head(a){const n=a.length,dn=a.filter(t=>t.d).length,cr=a.filter(t=>t.c),cd=cr.filter(t=>t.d).length,ov=a.filter(od).length,cv=cr.filter(od).length,wk=a.filter(t=>!t.d&&dd(t.u)>=0&&dd(t.u)<=7),nx=cr.find(t=>!t.d);
  return `<h1>Our moving tracker</h1><p class=mu>Keys Wed 16 Dec, move Sat 19 Dec, trip from Wed 23 Dec.</p><div class=hd>${chip()}${who()}</div>
 <div class="g tiles">${K.map(k=>{const x=dd(k[1]);return `<div class=t><small>${k[0]}, ${fm(k[1])}</small><b>${x>0?x+" days":x==0?"Today":"Passed"}</b></div>`}).join("")}</div>
@@ -199,7 +228,7 @@ function head(a){const n=a.length,dn=a.filter(t=>t.d).length,cr=a.filter(t=>t.c)
 <div class=t><small>Due in the next 7 days</small>${wk.length?wk.slice(0,4).map(t=>`<div><small>${fm(t.u)}</small> ${t.t}</div>`).join("")+(wk.length>4?`<small>and ${wk.length-4} more</small>`:""):"<div>Nothing due. Nice.</div>"}</div>
 <div class=t><small>Critical path</small><b>${cd} of ${cr.length}</b><div class=bar><i style="width:${pc(cd,cr.length)}%"></i></div><div>${cd==cr.length?"All clear":cv?`<span class=k2>${cv} overdue</span>`:"On track"}${nx?`<br><small>Next: ${nx.t}, ${fm(nx.u)}</small>`:""}</div></div></div>`}
 function board(a){return `<div class=cols>${SG.map((s,i)=>{const l=a.filter(t=>t.s==i);return `<section class=col><h3>${s[0]}</h3><small>${fm(s[1])} to ${fm(s[2])}, ${l.filter(t=>t.d).length} of ${l.length} done</small>${l.map(card).join("")}</section>`}).join("")}</div>`}
-function vis(a){return `<aside class=vis><h2>Settled at the new house, flat handed back, ready for the trip</h2><small>What done looks like</small><ul>${VI.map(v=>{const l=v[1].map(i=>a.find(t=>t.id==i)).filter(Boolean),n=l.filter(t=>t.d).length,y=n==l.length;return `<li><span class="ck${y?" y":""}">${y?"✓":""}</span><span>${v[0]}<br><small>${n} of ${l.length} tasks done</small></span></li>`}).join("")}</ul></aside>`}
+function vis(a){return `<aside class=vis><h2>Settled at the new house, flat handed back, ready for the trip</h2><small>What done looks like</small><ul>${VI.map(v=>{const l=v[1].map(i=>a.find(t=>t.id==i)).filter(Boolean),n=l.filter(t=>t.d).length,y=l.length>0&&n==l.length;return `<li><span class="ck${y?" y":""}">${y?"✓":""}</span><span>${v[0]}<br><small>${n} of ${l.length} tasks done</small></span></li>`}).join("")}</ul></aside>`}
 function tl(a){const R0="2026-10-24",N=73,p=d=>(df(d,R0)/N*100).toFixed(2);
  return `<div class=tl><div class=tw>${["2026-11-01","2026-12-01","2027-01-01"].map(d=>`<div class=mo style="left:${p(d)}%">${M[dt(d).getMonth()]}</div>`).join("")}
 ${SG.map(s=>`<div class=sb style="left:${p(s[1])}%;width:${((df(s[2],s[1])+1)/N*100).toFixed(2)}%" title="${s[0]}">${s[0]}</div>`).join("")}
@@ -208,8 +237,8 @@ ${a.filter(t=>t.c).map(t=>`<div class="dot${t.d?" y":""}" style="left:${p(t.u)}%
 <div class=td style="left:${Math.max(0,p(iso(TD)))}%" title="Today"></div></div><small>Dots are critical path tasks (green when done). The dashed line is today.</small></div>`}
 function list(a){const l=a.filter(t=>(F=="All"||t.o==F)&&!(H&&t.d));
  return `<div class=fl>${["All",...OW].map(o=>`<button class="chip${F==o?" on":""}" data-f="${o}">${o}</button>`).join("")}<label><input type=checkbox id=hd${H?" checked":""}> Hide done</label></div>
-<details><summary>Add a task</summary><div class=af><input id=nt placeholder="Task"><select id=no>${OW.map(o=>`<option>${o}</option>`).join("")}</select><input id=nd type=date value="${iso(TD)}"><select id=ns>${SG.map((s,i)=>`<option value=${i}>${s[0]}</option>`).join("")}</select><button id=ad>Add</button></div></details>
-${SG.map((s,i)=>{const x=l.filter(t=>t.s==i);return x.length?`<h3>${s[0]}</h3><small>${fm(s[1])} to ${fm(s[2])}</small><div style="margin-top:6px">${x.map(t=>`<div class="r${t.d?" d":""}"><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><div><b class=tt>${t.t}</b>${t.c?' <span class=k2>Critical path</span>':""}${t.x?` <button class=del data-x="${t.id}">Remove</button>`:""}<div class=how style="margin-left:0">${t.h}</div>${t.d&&t.by?`<div class="how by" style="margin-left:0">\u2713 ${esc(t.by)}${t.at?", "+ad(t.at):""}</div>`:""}</div><select data-o="${t.id}">${OW.map(o=>`<option${o==t.o?" selected":""}>${o}</option>`).join("")}</select><span class="${od(t)?"k2":""}">${fm(t.u)}</span><input class=nt data-n="${t.id}" placeholder="Notes" value="${esc(t.n)}"></div>`).join("")}</div>`:""}).join("")}`}
+<details><summary>Add a task</summary><div class=af><input id=nt placeholder="Task"><select id=no>${OW.map(o=>`<option>${o}</option>`).join("")}</select><input id=nd type=date value="${iso(TD)}"><button id=ad>Add</button></div><small>The stage is set from the date.</small></details>
+${SG.map((s,i)=>{const x=l.filter(t=>t.s==i);return x.length?`<h3>${s[0]}</h3><small>${fm(s[1])} to ${fm(s[2])}</small><div style="margin-top:6px">${x.map(t=>`<div class="r${t.d?" d":""}"><input type=checkbox data-i="${t.id}"${t.d?" checked":""}><div><b class=tt>${t.t}</b>${t.c?' <span class=k2>Critical path</span>':""}${od(t)?' <span class=k2>Overdue</span>':""}<div class=how style="margin-left:0">${t.h}</div>${t.d&&t.by?`<div class="how by" style="margin-left:0">\u2713 ${esc(t.by)}${t.at?", "+ad(t.at):""}</div>`:""}</div><select data-o="${t.id}">${OW.map(o=>`<option${o==t.o?" selected":""}>${o}</option>`).join("")}</select><input type=date class=du data-u="${t.id}" value="${t.u}"><input class=nt data-n="${t.id}" placeholder="Notes" value="${esc(t.n)}"><button class=eb data-e="${t.id}">Edit</button></div>`).join("")}</div>`:""}).join("")}`}
 function render(){const a=all(),c=document.querySelector(".cols"),sl=c?c.scrollLeft:0;
  /* A remote edit re-renders the page, so remember where the cursor was and what
     was being typed, and put it back afterwards. */
@@ -222,21 +251,35 @@ function render(){const a=all(),c=document.querySelector(".cols"),sl=c?c.scrollL
   if(el){el.focus();if(k==="n"&&fv!=null&&el.value!==fv)el.value=fv;
    if(ss!=null&&el.setSelectionRange)try{el.setSelectionRange(ss,se)}catch(e){}}}}
 const NT={};
+function openSh(id){const t=all().find(x=>x.id==id);if(!t)return;ET=t;RC=0;
+ $("sh").innerHTML=`<div class=sc role=dialog aria-label="Edit task"><h3>Edit task</h3><label>Task<input id=et value="${esc(t.r)}"></label><label>Owner<select id=eo>${OW.map(o=>`<option${o==t.o?" selected":""}>${o}</option>`).join("")}</select></label><label>Due date<input type=date id=eu value="${t.u}"></label><div class=qb><button data-q="-1">1 day earlier</button><button data-q="1">1 day later</button><button data-q="7">1 week later</button></div><label>Notes<textarea id=en>${esc(t.n)}</textarea></label><label class=cb><input type=checkbox id=ed${t.d?" checked":""}> Done</label><div class=ba><button id=es>Save</button><button id=ex>Cancel</button><button id=er>Remove</button></div></div>`;
+ $("sh").hidden=false}
+const clo=()=>{$("sh").hidden=true;$("sh").innerHTML="";ET=null};
+function sav(){const t=ET;if(!t)return;const p={},ti=$("et").value.trim(),o=$("eo").value,u=$("eu").value||t.u,n=$("en").value,d=+$("ed").checked;
+ if(ti&&ti!==t.r)p[t.x?"t":"t"]=ti;if(o!==t.o)p.o=o;if(u!==t.u){p.u=u;p.s=stg(u)}if(n!==t.n)p.n=n;if(d!==+!!t.d)p.d=d;
+ const id=t.id;clo();if(Object.keys(p).length)put(id,p)}
+document.addEventListener("keydown",e=>{if(e.key=="Escape"&&ET)clo()});
 document.addEventListener("change",e=>{const t=e.target,d=t.dataset;
  if(d.i)put(d.i,{d:+t.checked});else if(d.o)put(d.o,{o:t.value});
+ else if(d.u){if(t.value)put(d.u,{u:t.value,s:stg(t.value)})}
  else if(d.n){clearTimeout(NT[d.n]);delete NT[d.n];put(d.n,{n:t.value})}
  else if(t.id=="hd"){H=t.checked;render()}});
 /* Notes save as they are typed, so a note is never lost to a re-render. */
 document.addEventListener("input",e=>{const d=e.target.dataset;if(!d.n)return;
  const id=d.n,v=e.target.value;clearTimeout(NT[id]);NT[id]=setTimeout(()=>{delete NT[id];put(id,{n:v})},700)});
-document.addEventListener("click",e=>{const b=e.target.closest("[data-v],[data-f],[data-me],[data-x],#ad,#sbtn");if(!b)return;
+document.addEventListener("click",e=>{if(e.target.id=="sh"){clo();return}
+ const b=e.target.closest("[data-v],[data-f],[data-me],[data-x],[data-e],[data-q],#ad,#sbtn,#es,#ex,#er");if(!b)return;
  const d=b.dataset;
  if(d.v){V=d.v;render()}
  else if(d.f){F=d.f;render()}
  else if(d.me!=null){ME=d.me;wr("lr1me",ME);render()}
  else if(d.x){if(!b.dataset.arm){b.dataset.arm="1";b.textContent="Tap again";return}drop(d.x)}
  else if(b.id=="sbtn"){sy(ST,"refreshing");pull();flush();sub()}
- else{const ti=$("nt").value.trim();if(ti)put("x"+Date.now(),{x:1,t:ti,o:$("no").value,u:$("nd").value||iso(TD),s:+$("ns").value,d:0})}});
+ else if(d.e)openSh(d.e)
+ else if(d.q){const x=$("eu"),o=dt(x.value||ET.u);o.setDate(o.getDate()+ +d.q);x.value=iso(o)}
+ else if(b.id=="es")sav();else if(b.id=="ex")clo();
+ else if(b.id=="er"){if(!RC){RC=1;b.textContent="Tap again to remove";return}const t=ET;clo();t.x?drop(t.id):put(t.id,{del:1})}
+ else if(b.id=="ad"){const ti=$("nt").value.trim(),u=$("nd").value||iso(TD);if(ti)put("x"+Date.now(),{x:1,t:ti,o:$("no").value,u,s:stg(u),d:0})}});
 addEventListener("online",()=>{BO=1e3;pull();flush();sub()});
 addEventListener("offline",()=>sy("off","this device is offline"));
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&DB){pull();flush()}});
